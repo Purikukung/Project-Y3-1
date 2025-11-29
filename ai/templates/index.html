@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrashTrack+ — Trash Classifier</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand: #198754;
+      --muted: #6c757d;
+      --card-bg: #fff;
+      --page-bg: #f4f6f8;
+    }
+    body {
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: var(--page-bg);
+      color: #222;
+      margin: 0;
+    }
+    .navbar-custom {
+      background: var(--brand);
+    }
+    .navbar-brand {
+      color: #fff !important;
+      font-weight: 700;
+    }
+    .navbar .nav-link {
+      color: rgba(255, 255, 255, 0.95) !important;
+      font-weight: 600;
+    }
+    .navbar .nav-link:hover {
+      text-decoration: underline;
+      color: #fff !important;
+    }
+    .card-main {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(50, 50, 93, 0.06);
+      overflow: hidden;
+    }
+    .preview-box, .result-box {
+      background: var(--card-bg);
+      border-radius: 8px;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .preview-box img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .file-drop {
+      border: 2px dashed rgba(25, 135, 84, 0.12);
+      padding: .75rem;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .file-drop i {
+      font-size: 28px;
+      color: var(--brand);
+    }
+    .muted-small {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav class="navbar navbar-expand-md navbar-custom">
+      <div class="container">
+        <a class="navbar-brand" href="/">TrashTrack+</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav"
+          aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon" style="filter: invert(1) brightness(2);"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="main-nav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/home.php">HOME</a></li>
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/home.php#about">ABOUT</a></li>
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/home.php#Trash">TRASH</a></li>
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/home.php#Dashborad">BIN MAP</a></li>
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/home.php#footer">CONTACT</a></li>
+            <li class="nav-item"><a class="nav-link" href="http://tungaiedu.lnw.mn/project_ai/creator.php">CREATORS</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="card card-main">
+          <div class="row g-0">
+
+            <!-- Left: Preview -->
+            <div class="col-lg-6 p-4">
+              <div class="d-flex flex-column h-100">
+                <div class="mb-3 d-flex align-items-center justify-content-between">
+                  <div>
+                    <h3 class="h5 mb-0">🗑 Trash Classifier</h3>
+                    <div class="muted-small">อัปโหลดภาพแล้วกด <strong>Upload & Predict</strong></div>
+                  </div>
+                </div>
+
+                <div id="image-display" class="preview-box mb-3">
+                  <!-- ส่วนนี้จะถูกควบคุมโดย JavaScript เพื่อแสดงภาพตัวอย่างเท่านั้น -->
+                  <div class="text-center" id="preview-placeholder">
+                    <i class="bi bi-image" style="font-size:38px;color:var(--muted)"></i>
+                    <p class="mb-0 muted-small">ยังไม่เลือกภาพ</p>
+                  </div>
+                </div>
+
+                <div class="file-drop mb-3" id="file-drop-label" title="คลิกเพื่อเลือกภาพ">
+                  <i class="bi bi-cloud-arrow-up"></i>
+                </div>
+
+                <div class="mt-auto d-flex gap-2 justify-content-between">
+                  <small class="muted-small">ภาพตัวอย่างจะแสดงที่นี่ก่อนอัปโหลด</small>
+                  <small class="muted-small">Model: ModelTrash.h5</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Upload Form -->
+            <div class="col-lg-6 p-4 bg-light">
+              <form action="/" method="post" enctype="multipart/form-data" id="upload-form" class="h-100 d-flex flex-column">
+                <input id="image-input-form" name="imagefile" class="file-input" type="file" accept="image/*" style="display:none;">
+                
+                <div class="mb-3">
+                  <label class="form-label">ผลลัพธ์จากเซิร์ฟเวอร์</label>
+                  <div class="result-box">
+                    {% if filename %}
+                      <div style="width:100%;text-align:center;">
+                        <img src="{{ url_for('static', filename='images/' + filename) }}" alt="Uploaded image" style="max-height:200px;object-fit:contain;border-radius:8px;">
+                      </div>
+                    {% else %}
+                      <div class="text-center muted-small">ผลลัพธ์จะแสดงที่นี่</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">ผลการทำนาย</label>
+                  <div class="p-3 bg-white rounded-3 shadow-sm">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="text-muted-small">Class</div>
+                        <div class="h6 mb-0" id="pred-class">{{ prediction or '-' }}</div>
+                      </div>
+                      <div class="text-end" style="min-width:120px;">
+                        <div class="text-muted-small">Confidence</div>
+                        <div class="h6 mb-0" id="pred-confidence">{{ confidence or '-' }}%</div>
+                      </div>
+                    </div>
+
+                    <div class="mt-3">
+                      <div class="progress" style="height:10px;">
+                        <div id="conf-progress" class="progress-bar" role="progressbar" style="width: {{ confidence or 0 }}%;" aria-valuenow="{{ confidence or 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-auto d-flex gap-2">
+                  <button type="submit" class="btn btn-success btn-wide w-100" id="submit-btn">
+                    <i class="bi bi-rocket-takeoff"></i> Upload & Predict
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div> <!-- row -->
+        </div> <!-- card -->
+
+        <div class="text-center text-muted mt-3 small">Developed by TrashTrack+ Team</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JavaScript: Drag & Drop + Preview -->
+  <script>
+    const fileDrop = document.getElementById('file-drop-label');
+    const inputForm = document.getElementById('image-input-form');
+    const display = document.getElementById('image-display');
+    const submitBtn = document.getElementById('submit-btn');
+    const uploadForm = document.getElementById('upload-form');
+
+    // คลิกเพื่อเลือกรูป
+    fileDrop.addEventListener('click', () => inputForm.click());
+
+    // เมื่อเลือกรูปแล้วแสดง preview
+    inputForm.addEventListener('change', function(e){
+      const file = e.target.files[0];
+      if (file) showPreview(file);
+    });
+
+    // Drag events
+    ['dragenter','dragover'].forEach(ev => {
+      fileDrop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileDrop.classList.add('dragover');
+      });
+    });
+
+    ['dragleave','drop'].forEach(ev => {
+      fileDrop.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileDrop.classList.remove('dragover');
+      });
+    });
+
+    fileDrop.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (!dt) return;
+      const file = dt.files[0];
+      if (!file) return;
+      try {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        inputForm.files = dataTransfer.files;
+      } catch (err) {
+        // fallback
+        inputForm.files = dt.files;
+      }
+      showPreview(file);
+    });
+
+    // ✅ ฟังก์ชันแสดง preview ของรูป
+    function showPreview(file) {
+      const url = URL.createObjectURL(file);
+      // แทนที่ placeholder ด้วยภาพตัวอย่างที่ผู้ใช้เลือก
+      display.innerHTML = `
+        <div class="text-center" style="width:100%">
+          <img src="${url}" alt="Preview" onload="URL.revokeObjectURL(this.src)" style="max-height:300px;object-fit:contain;border-radius:8px">
+        </div>
+      `;
+    }
+
+    // ✅ ฟังก์ชันอัปเดต Progress Bar
+    function updateProgressBar() {
+      const confidenceEl = document.getElementById('pred-confidence');
+      const progressBar = document.getElementById('conf-progress');
+      const confidenceValue = parseFloat(confidenceEl.textContent) || 0;
+      
+      progressBar.style.width = `${confidenceValue}%`;
+      progressBar.setAttribute('aria-valuenow', confidenceValue);
+    }
+
+    // เรียกใช้ฟังก์ชันเมื่อหน้าเว็บโหลดเสร็จ
+    document.addEventListener('DOMContentLoaded', updateProgressBar);
+  </script>
+</body>
+</html>
